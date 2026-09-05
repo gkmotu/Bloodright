@@ -257,7 +257,7 @@ func _show_description_editor() -> void:
     description_index = clampi(description_index, 0, descriptions.size() - 1)
     var selected_entry: Dictionary = descriptions[description_index]
     var editor := VBoxContainer.new(); editor.size_flags_horizontal = Control.SIZE_EXPAND_FILL; editor.add_theme_constant_override("separation", 12); layout.add_child(_panel("DESCRIPTION DETAILS", editor))
-    var guidance := Label.new(); guidance.text = "A reusable visual definition. Start with the name and symbol, then give it a tag ID so systems can group it."; guidance.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; guidance.add_theme_color_override("font_color", MUTED); editor.add_child(guidance)
+    var guidance := Label.new(); guidance.text = "A reusable visual definition. Changes save locally as you make them; use PUSH to send them to master."; guidance.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; guidance.add_theme_color_override("font_color", MUTED); editor.add_child(guidance)
     var form := GridContainer.new(); form.columns = 2; form.add_theme_constant_override("h_separation", 16); form.add_theme_constant_override("v_separation", 10); editor.add_child(form)
     var name_input := _description_text_field(form, "Name", selected_entry.get("name", ""))
     var symbol_input := _description_text_field(form, "Symbol", selected_entry.get("symbol", "?"))
@@ -279,14 +279,14 @@ func _show_description_editor() -> void:
         thumb_label.add_theme_font_size_override("font_size", 48 if size_select.selected == 1 else 26)
         thumb_label.add_theme_color_override("font_color", color_picker.color)
     refresh_thumbnail.call()
-    name_input.text_changed.connect(func(value: String) -> void: selected_entry.name = value)
-    symbol_input.text_changed.connect(func(value: String) -> void: selected_entry.symbol = value.left(1); refresh_thumbnail.call())
-    tag_input.text_changed.connect(func(value: String) -> void: selected_entry.tagId = value)
-    id_input.text_changed.connect(func(value: String) -> void: selected_entry.id = value)
-    type_select.item_selected.connect(func(index: int) -> void: selected_entry.type = type_select.get_item_text(index))
-    size_select.item_selected.connect(func(index: int) -> void: selected_entry.glyphSize = size_select.get_item_text(index); refresh_thumbnail.call())
-    color_picker.color_changed.connect(func(value: Color) -> void: selected_entry.color = "#%s" % value.to_html(false); refresh_thumbnail.call())
-    description_input.text_changed.connect(func() -> void: selected_entry.description = description_input.text)
+    name_input.text_changed.connect(func(value: String) -> void: selected_entry.name = value; _persist_description_draft_silently())
+    symbol_input.text_changed.connect(func(value: String) -> void: selected_entry.symbol = value.left(1); refresh_thumbnail.call(); _persist_description_draft_silently())
+    tag_input.text_changed.connect(func(value: String) -> void: selected_entry.tagId = value; _persist_description_draft_silently())
+    id_input.text_changed.connect(func(value: String) -> void: selected_entry.id = value; _persist_description_draft_silently())
+    type_select.item_selected.connect(func(index: int) -> void: selected_entry.type = type_select.get_item_text(index); _persist_description_draft_silently())
+    size_select.item_selected.connect(func(index: int) -> void: selected_entry.glyphSize = size_select.get_item_text(index); refresh_thumbnail.call(); _persist_description_draft_silently())
+    color_picker.color_changed.connect(func(value: Color) -> void: selected_entry.color = "#%s" % value.to_html(false); refresh_thumbnail.call(); _persist_description_draft_silently())
+    description_input.text_changed.connect(func() -> void: selected_entry.description = description_input.text; _persist_description_draft_silently())
     var save := Button.new(); save.text = "SAVE AND PUBLISH DESCRIPTION"; save.custom_minimum_size = Vector2(300, 44); save.pressed.connect(_save_description_draft); editor.add_child(save)
 
 func _description_labeled_control(parent: Control, label_text: String, control: Control, add_to_parent := true) -> VBoxContainer:
@@ -318,6 +318,12 @@ func _save_description_draft() -> void:
         push_error("Description was saved to source, but could not be published.")
         return
     show_notification("DESCRIPTION SAVED", "The published game data now includes this description after restart.", Color("6bab76"))
+
+func _persist_description_draft_silently() -> void:
+    var file := FileAccess.open("res://content/source/descriptions.json", FileAccess.WRITE)
+    if file == null: return
+    file.store_string(JSON.stringify(repository.content.descriptions, "  ") + "\n")
+    repository.save_published()
 
 func _show_map_editor() -> void:
     _shell("Map Scriptorium"); var box := VBoxContainer.new(); page.add_child(box)
@@ -403,12 +409,12 @@ func _show_settings() -> void:
     _settings_colour(form, "Text colour", "text", Color(visual_theme.get("text", "#d8d0ba")))
     _settings_colour(form, "Muted text colour", "muted", Color(visual_theme.get("muted", "#918b7d")))
     _settings_colour(form, "Background colour", "background", Color(visual_theme.get("background", "#0b0e0f")))
-    var scale_picker := OptionButton.new(); scale_picker.add_item("90%"); scale_picker.add_item("100%"); scale_picker.add_item("110%"); scale_picker.add_item("125%"); var values := [0.9, 1.0, 1.1, 1.25]; scale_picker.select(values.find(float(visual_theme.get("uiScale", 1.0)))); scale_picker.item_selected.connect(func(index: int) -> void: repository.content.settings.theme.uiScale = values[index]); _description_labeled_control(form, "Interface scale", scale_picker)
+    var scale_picker := OptionButton.new(); scale_picker.add_item("90%"); scale_picker.add_item("100%"); scale_picker.add_item("110%"); scale_picker.add_item("125%"); var values := [0.9, 1.0, 1.1, 1.25]; scale_picker.select(values.find(float(visual_theme.get("uiScale", 1.0)))); scale_picker.item_selected.connect(func(index: int) -> void: repository.content.settings.theme.uiScale = values[index]; _persist_settings_silently()); _description_labeled_control(form, "Interface scale", scale_picker)
     var save := Button.new(); save.text = "SAVE AND PUBLISH SETTINGS"; save.custom_minimum_size = Vector2(300, 48); save.pressed.connect(_save_visual_settings); box.add_child(save)
 
 func _settings_colour(parent: Control, label_text: String, key: String, value: Color) -> void:
     var picker := ColorPickerButton.new(); picker.color = value
-    picker.color_changed.connect(func(selected: Color) -> void: repository.content.settings.theme[key] = "#%s" % selected.to_html(false))
+    picker.color_changed.connect(func(selected: Color) -> void: repository.content.settings.theme[key] = "#%s" % selected.to_html(false); _persist_settings_silently())
     _description_labeled_control(parent, label_text, picker)
 
 func _save_visual_settings() -> void:
@@ -417,3 +423,7 @@ func _save_visual_settings() -> void:
         return
     _apply_visual_settings()
     show_notification("SETTINGS SAVED", "Colours and interface scale will load exactly the same after restart.", Color("6bab76"))
+
+func _persist_settings_silently() -> void:
+    repository.save_settings_source()
+    repository.save_published()
