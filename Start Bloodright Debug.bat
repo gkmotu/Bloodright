@@ -24,8 +24,9 @@ if exist ".git" (
     if not "%BLOODRIGHT_LOCAL%"=="%BLOODRIGHT_REMOTE%" set "BLOODRIGHT_UPDATED=1"
 
     rem Preserve a recoverable snapshot before master becomes the active workspace.
-    git diff --quiet
-    if errorlevel 1 git stash push --include-untracked --quiet -m "Bloodright automatic pre-master sync"
+    git merge-base --is-ancestor origin/main HEAD >nul 2>&1
+    if errorlevel 1 git branch "bloodright-recovery-%RANDOM%" HEAD >nul 2>&1
+    git stash push --include-untracked --quiet -m "Bloodright automatic pre-master sync"
 
     git reset --hard --quiet origin/main >nul 2>&1
     if errorlevel 1 (
