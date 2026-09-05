@@ -32,7 +32,6 @@ var push_last_stage := ""
 var splash_layer: Control
 
 func _ready() -> void:
-    _show_startup_splash()
     call_deferred("_load_bloodright")
 
 func _load_bloodright() -> void:
@@ -48,9 +47,6 @@ func _load_bloodright() -> void:
         call_deferred("show_notification", "NEW BUILD INSTALLED", "Bloodright updated from main and is ready to play.", Color("6bab76"), "RESTART ENGINE", _restart_engine)
     else:
         call_deferred("show_notification", "BLOODRIGHT ENGINE", "The First Vault is ready for play.")
-    await get_tree().process_frame
-    await get_tree().create_timer(3.0).timeout
-    _dismiss_startup_splash()
 
 func _show_startup_splash() -> void:
     splash_layer = Control.new()
