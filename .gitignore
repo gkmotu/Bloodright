@@ -17,6 +17,8 @@ node_modules/
 
 # Temporary live status written by the Push Build workflow
 tools/push-status.json
+tools/send-phone-notification.ps1
+tools/send-build-alert.ps1
 
 # Per-computer updater state and diagnostic log
 .bloodright/

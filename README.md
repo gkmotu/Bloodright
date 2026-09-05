@@ -1,5 +1,7 @@
 # Bloodright
 
+See [PHONE_ALERTS.md](PHONE_ALERTS.md) to connect both Android phones to shared Bloodright build notifications.
+
 The first native Godot prototype for Isabelle's Varenza roguelike. It includes
 a turn-based playable vault, content-tool foundations, and a validated
 source-to-published content pipeline.
