@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "publishedAt": "2026-09-05T17:21:56.029Z",
+  "publishedAt": "2026-09-05T19:14:06.762Z",
   "terrain": [
     {
       "id": "bloodright.floor.stone",
@@ -149,14 +149,7 @@
         "x": 2,
         "y": 2
       },
-      "actors": [
-        {
-          "descriptionId": "bloodright.creature.fire_dragon",
-          "x": 14,
-          "y": 2,
-          "awarenessRange": 10
-        }
-      ],
+      "actors": [],
       "items": [
         {
           "itemId": "bloodright.weapon.rustblade",
