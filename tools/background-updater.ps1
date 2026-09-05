@@ -21,11 +21,17 @@ function Show-BloodrightToast([string]$Title, [string]$Message, [string]$Version
         Add-Type -AssemblyName System.Runtime.WindowsRuntime
         $null = [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime]
         $null = [Windows.UI.Notifications.ToastNotification, Windows.UI.Notifications, ContentType = WindowsRuntime]
-        $template = [Windows.UI.Notifications.ToastTemplateType]::ToastText02
-        $xml = [Windows.UI.Notifications.ToastNotificationManager]::GetTemplateContent($template)
-        $text = $xml.GetElementsByTagName('text')
-        $null = $text.Item(0).AppendChild($xml.CreateTextNode($Title))
-        $null = $text.Item(1).AppendChild($xml.CreateTextNode($Message))
+        $null = [Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom.XmlDocument, ContentType = WindowsRuntime]
+        $SafeTitle = [System.Security.SecurityElement]::Escape($Title)
+        $SafeMessage = [System.Security.SecurityElement]::Escape($Message)
+        $ToastMarkup = @"
+<toast activationType="protocol" launch="bloodright://launch">
+  <visual><binding template="ToastGeneric"><text>$SafeTitle</text><text>$SafeMessage</text></binding></visual>
+  <actions><action content="Restart Bloodright" arguments="bloodright://launch" activationType="protocol" /></actions>
+</toast>
+"@
+        $xml = New-Object -TypeName Windows.Data.Xml.Dom.XmlDocument
+        $xml.LoadXml($ToastMarkup)
         $toast = [Windows.UI.Notifications.ToastNotification]::new($xml)
         [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier('Microsoft.WindowsPowerShell').Show($toast)
         Set-Content -LiteralPath $BloodrightNotice -Value $Version -Encoding utf8
@@ -40,7 +46,7 @@ try {
     if (-not (Test-Path -LiteralPath (Join-Path $BloodrightRoot '.git'))) { throw 'This folder is not a Git workspace.' }
     if (-not $BloodrightGit) { throw 'Git is not installed on this Windows computer.' }
     if ($env:BLOODRIGHT_TEST_NOTIFICATION -eq '1') {
-        Show-BloodrightToast 'Bloodright updater connected' 'Windows will notify you when a new Bloodright build is available.' 'updater-test-v1'
+        Show-BloodrightToast 'Bloodright updater connected' 'Windows will notify you when a new Bloodright build is available.' 'updater-test-v2'
         exit 0
     }
     & $BloodrightGit fetch --quiet origin main
