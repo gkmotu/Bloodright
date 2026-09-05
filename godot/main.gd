@@ -21,15 +21,18 @@ var story_text: Label
 var story_button: Button
 var dragon_warning_shown := false
 var combat_actions: VBoxContainer
+var notification_stack: VBoxContainer
 
 func _ready() -> void:
     RenderingServer.set_default_clear_color(Color("0b0e0f"))
+    _create_notification_stack()
     if not repository.load_published(): return
     var errors := repository.validate()
     if not errors.is_empty():
         push_error("\n".join(errors)); return
     game.begin(repository)
     _show_home()
+    call_deferred("show_notification", "BLOODRIGHT ENGINE", "The First Vault is ready for play.")
 
 func _unhandled_key_input(event: InputEvent) -> void:
     if not event.pressed or event.echo or not is_instance_valid(map_grid): return
@@ -43,7 +46,8 @@ func _shell(_title: String) -> VBoxContainer:
     if is_instance_valid(story_popup):
         story_popup.queue_free()
         story_popup = null
-    for child in get_children(): child.queue_free()
+    for child in get_children():
+        if child != notification_stack: child.queue_free()
     map_grid = null
     var root := VBoxContainer.new(); root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT); root.add_theme_constant_override("separation", 0); add_child(root)
     var header := HBoxContainer.new(); header.custom_minimum_size.y = 76; header.add_theme_constant_override("separation", 10); root.add_child(header)
@@ -137,6 +141,7 @@ func _create_story_popup() -> void:
     story_popup.visible = false
 
 func _show_dragon_encounter() -> void:
+    show_notification("THE LONG NIGHT STIRS", "The Fire Dragon has seen you. Combat has begun.", Color("b84a40"))
     story_popup.visible = true
     story_title.text = "THE LONG NIGHT STIRS"
     story_text.text = "A red shape fills the northern dark. The Fire Dragon has found you.\n\nCOMBAT BEGINS. The vault seals away every path but action. Your broken arrow is all you can reach."
@@ -160,6 +165,52 @@ func _restart_after_death() -> void:
     dragon_warning_shown = false
     story_popup.visible = false
     _render_game()
+
+func _create_notification_stack() -> void:
+    notification_stack = VBoxContainer.new()
+    notification_stack.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
+    notification_stack.offset_left = 22
+    notification_stack.offset_right = 410
+    notification_stack.offset_top = -340
+    notification_stack.offset_bottom = -22
+    notification_stack.alignment = BoxContainer.ALIGNMENT_END
+    notification_stack.add_theme_constant_override("separation", 8)
+    notification_stack.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    add_child(notification_stack)
+
+func show_notification(title: String, message: String, accent := GOLD) -> void:
+    if not is_instance_valid(notification_stack): return
+    var card := PanelContainer.new()
+    card.custom_minimum_size = Vector2(360, 0)
+    var margin := MarginContainer.new()
+    margin.add_theme_constant_override("margin_left", 16)
+    margin.add_theme_constant_override("margin_right", 16)
+    margin.add_theme_constant_override("margin_top", 12)
+    margin.add_theme_constant_override("margin_bottom", 12)
+    card.add_child(margin)
+    var box := VBoxContainer.new()
+    box.add_theme_constant_override("separation", 4)
+    margin.add_child(box)
+    var heading := Label.new()
+    heading.text = title
+    heading.add_theme_color_override("font_color", accent)
+    heading.add_theme_font_size_override("font_size", 13)
+    box.add_child(heading)
+    var copy := Label.new()
+    copy.text = message
+    copy.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+    copy.add_theme_color_override("font_color", INK)
+    box.add_child(copy)
+    notification_stack.add_child(card)
+    card.modulate = Color(1, 1, 1, 0)
+    card.scale = Vector2(0.92, 0.92)
+    var tween := create_tween()
+    tween.set_parallel(true)
+    tween.tween_property(card, "modulate:a", 1.0, 0.2)
+    tween.tween_property(card, "scale", Vector2.ONE, 0.2).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+    tween.chain().tween_interval(4.4)
+    tween.tween_property(card, "modulate:a", 0.0, 0.35)
+    tween.tween_callback(card.queue_free)
 
 func _show_terrain_editor() -> void: _show_record_editor("TERRAIN ATELIER", "terrain")
 func _show_item_editor() -> void: _show_record_editor("ITEM FORGE", "items")
