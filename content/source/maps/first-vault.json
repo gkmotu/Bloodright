@@ -1,0 +1,28 @@
+{
+  "id":"bloodright.map.first_vault",
+  "name":"The First Vault",
+  "width":17,
+  "height":11,
+  "tiles":[
+    "#################",
+    "#...............#",
+    "#..#####........#",
+    "#..#...#..####..#",
+    "#..#...+.....#..#",
+    "#..#...#.....#..#",
+    "#..#####.....#..#",
+    "#............#..#",
+    "#............#..#",
+    "#...............#",
+    "#################"
+  ],
+  "legend":{"#":"bloodright.wall.stone",".":"bloodright.floor.stone","+":"bloodright.door.oak"},
+  "playerStart":{"x":2,"y":2},
+  "actors":[
+    {"descriptionId":"bloodright.creature.fire_dragon","x":14,"y":2,"awarenessRange":10}
+  ],
+  "items":[
+    {"itemId":"bloodright.weapon.rustblade","x":5,"y":4},
+    {"itemId":"bloodright.consumable.redleaf","x":13,"y":8}
+  ]
+}

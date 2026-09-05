@@ -1,0 +1,6 @@
+[
+  {"id":"bloodright.floor.stone","name":"Ancient Stone","glyph":"·","color":"#7f8b8d","walkable":true,"blocksSight":false,"description":"Time-worn stone beneath the old keep."},
+  {"id":"bloodright.wall.stone","name":"Keep Wall","glyph":"#","color":"#596568","walkable":false,"blocksSight":true,"description":"Cold masonry marked by forgotten hands."},
+  {"id":"bloodright.door.oak","name":"Oak Door","glyph":"+","color":"#bb7a45","walkable":true,"blocksSight":false,"description":"A heavy oak door, standing ajar."},
+  {"id":"bloodright.grass.moon","name":"Moon Grass","glyph":"\"","color":"#63b47a","walkable":true,"blocksSight":false,"description":"Pale grass that gleams beneath starlight."}
+]

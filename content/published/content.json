@@ -1,0 +1,164 @@
+{
+  "schemaVersion": 1,
+  "publishedAt": "2026-09-05T13:47:26.040Z",
+  "terrain": [
+    {
+      "id": "bloodright.floor.stone",
+      "name": "Ancient Stone",
+      "glyph": "·",
+      "color": "#7f8b8d",
+      "walkable": true,
+      "blocksSight": false,
+      "description": "Time-worn stone beneath the old keep."
+    },
+    {
+      "id": "bloodright.wall.stone",
+      "name": "Keep Wall",
+      "glyph": "#",
+      "color": "#596568",
+      "walkable": false,
+      "blocksSight": true,
+      "description": "Cold masonry marked by forgotten hands."
+    },
+    {
+      "id": "bloodright.door.oak",
+      "name": "Oak Door",
+      "glyph": "+",
+      "color": "#bb7a45",
+      "walkable": true,
+      "blocksSight": false,
+      "description": "A heavy oak door, standing ajar."
+    },
+    {
+      "id": "bloodright.grass.moon",
+      "name": "Moon Grass",
+      "glyph": "\"",
+      "color": "#63b47a",
+      "walkable": true,
+      "blocksSight": false,
+      "description": "Pale grass that gleams beneath starlight."
+    }
+  ],
+  "items": [
+    {
+      "id": "bloodright.weapon.rustblade",
+      "name": "Rustblade",
+      "glyph": "/",
+      "color": "#d5c6a1",
+      "category": "weapon",
+      "description": "A nicked sword bearing the Varenza family sigil.",
+      "effect": {
+        "kind": "attack",
+        "amount": 2
+      }
+    },
+    {
+      "id": "bloodright.consumable.redleaf",
+      "name": "Redleaf Tonic",
+      "glyph": "!",
+      "color": "#ef6a70",
+      "category": "consumable",
+      "description": "A sharp-smelling tonic brewed from redleaf.",
+      "effect": {
+        "kind": "heal",
+        "amount": 4
+      }
+    }
+  ],
+  "descriptions": [
+    {
+      "id": "bloodright.creature.fire_dragon",
+      "tagId": "creature.dragon.fire",
+      "type": "character",
+      "name": "Fire Dragon",
+      "symbol": "D",
+      "glyphSize": "large",
+      "color": "#d83a32",
+      "thumbnail": "glyph",
+      "description": "A great fire dragon, its scales glowing ember-red as it fills the dark with smoke and heat."
+    },
+    {
+      "id": "bloodright.prop.vault_brazier",
+      "tagId": "prop.furniture.light",
+      "type": "prop",
+      "name": "Vault Brazier",
+      "symbol": "&",
+      "glyphSize": "large",
+      "color": "#e6a04d",
+      "thumbnail": "glyph",
+      "description": "A bronze brazier whose low flame keeps the old vault from complete darkness."
+    },
+    {
+      "id": "bloodright.prop.sealed_letter",
+      "tagId": "prop.document.letter",
+      "type": "prop",
+      "name": "Sealed Letter",
+      "symbol": "?",
+      "glyphSize": "small",
+      "color": "#e8dfc5",
+      "thumbnail": "glyph",
+      "description": "A folded letter sealed with dark red wax; its recipient has been scratched away."
+    },
+    {
+      "id": "bloodright.prop.bloodright_banner",
+      "tagId": "prop.decoration.banner",
+      "type": "prop",
+      "name": "Bloodright Banner",
+      "symbol": "|",
+      "glyphSize": "large",
+      "color": "#a9443c",
+      "thumbnail": "glyph",
+      "description": "A faded crimson banner carrying the mark of the old Bloodright line."
+    }
+  ],
+  "maps": [
+    {
+      "id": "bloodright.map.first_vault",
+      "name": "The First Vault",
+      "width": 17,
+      "height": 11,
+      "tiles": [
+        "#################",
+        "#...............#",
+        "#..#####........#",
+        "#..#...#..####..#",
+        "#..#...+.....#..#",
+        "#..#...#.....#..#",
+        "#..#####.....#..#",
+        "#............#..#",
+        "#............#..#",
+        "#...............#",
+        "#################"
+      ],
+      "legend": {
+        "#": "bloodright.wall.stone",
+        ".": "bloodright.floor.stone",
+        "+": "bloodright.door.oak"
+      },
+      "playerStart": {
+        "x": 2,
+        "y": 2
+      },
+      "actors": [
+        {
+          "descriptionId": "bloodright.creature.fire_dragon",
+          "x": 14,
+          "y": 2,
+          "awarenessRange": 10
+        }
+      ],
+      "items": [
+        {
+          "itemId": "bloodright.weapon.rustblade",
+          "x": 5,
+          "y": 4
+        },
+        {
+          "itemId": "bloodright.consumable.redleaf",
+          "x": 13,
+          "y": 8
+        }
+      ]
+    }
+  ]
+}

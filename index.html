@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Bloodright — Varenza Prototype</title>
+  <link rel="stylesheet" href="src/ui.css">
+</head>
+<body>
+  <header>
+    <div><span class="sigil">B</span><div><h1>Bloodright</h1><p>A tale of Varenza</p></div></div>
+    <nav>
+      <button data-view="welcome" class="active">Home</button>
+      <button data-view="game">Play</button>
+      <button data-view="terrain">Terrain</button>
+      <button data-view="items">Items</button>
+      <button data-view="maps">Maps</button>
+    </nav>
+  </header>
+  <main>
+    <section id="welcome" class="view active hero">
+      <div class="hero-copy">
+        <span class="eyebrow">FIRST PLAYABLE CHRONICLE</span>
+        <h2>The First Vault waits beneath Varenza.</h2>
+        <p>Walk its forgotten halls, recover the Rustblade, and discover the beginnings of Isabelle’s world.</p>
+        <button id="enter" class="primary">Enter Varenza</button>
+      </div>
+      <div class="rune-card"><span>ᚱ</span><p>“What blood remembers,<br>stone cannot bury.”</p></div>
+    </section>
+
+    <section id="game" class="view">
+      <div class="game-layout">
+        <div class="map-frame"><div id="game-map" class="tile-map" aria-label="Game map"></div></div>
+        <aside>
+          <div class="panel"><h3>Wayfarer</h3><div class="meter"><i id="hp-bar"></i></div><p id="stats"></p></div>
+          <div class="panel"><h3>Pack</h3><div id="inventory" class="empty-note">Empty</div></div>
+          <div class="panel controls"><h3>Commands</h3><div class="dpad"><button data-move="0,-1">▲</button><button data-move="-1,0">◀</button><button data-action="pickup">Take</button><button data-move="1,0">▶</button><button data-move="0,1">▼</button></div><p>WASD / arrows · G take · I pack · R restart</p></div>
+        </aside>
+      </div>
+      <div class="log panel"><h3>Chronicle</h3><div id="messages"></div></div>
+    </section>
+
+    <section id="terrain" class="view editor-view"><div class="editor-head"><div><span class="eyebrow">WORLD TOOL</span><h2>Terrain Atelier</h2></div><button class="primary publish">Publish to Game</button></div><div class="editor-grid"><div class="panel"><h3>Terrain Library</h3><div id="terrain-list" class="record-list"></div><button id="add-terrain">+ New terrain</button></div><form id="terrain-form" class="panel form-panel"></form></div></section>
+    <section id="items" class="view editor-view"><div class="editor-head"><div><span class="eyebrow">WORLD TOOL</span><h2>Item Forge</h2></div><button class="primary publish">Publish to Game</button></div><div class="editor-grid"><div class="panel"><h3>Item Library</h3><div id="item-list" class="record-list"></div><button id="add-item">+ New item</button></div><form id="item-form" class="panel form-panel"></form></div></section>
+    <section id="maps" class="view editor-view"><div class="editor-head"><div><span class="eyebrow">WORLD TOOL</span><h2>Map Scriptorium</h2></div><button class="primary publish">Publish to Game</button></div><div class="map-editor-layout"><div class="panel"><h3>Brush</h3><div id="palette" class="palette"></div><button id="place-start">Place hero start</button><p class="hint">Choose terrain, then paint the map. Right-click also places the hero.</p></div><div class="map-frame"><div id="editor-map" class="tile-map editing"></div></div></div></section>
+  </main>
+  <div id="toast" role="status"></div>
+  <script type="module" src="src/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+[
+  {"id":"bloodright.weapon.rustblade","name":"Rustblade","glyph":"/","color":"#d5c6a1","category":"weapon","description":"A nicked sword bearing the Varenza family sigil.","effect":{"kind":"attack","amount":2}},
+  {"id":"bloodright.consumable.redleaf","name":"Redleaf Tonic","glyph":"!","color":"#ef6a70","category":"consumable","description":"A sharp-smelling tonic brewed from redleaf.","effect":{"kind":"heal","amount":4}}
+]
