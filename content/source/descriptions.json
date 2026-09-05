@@ -1,46 +1,46 @@
 [
   {
+    "color": "#429335",
+    "description": "A great fire dragon, its scales glowing ember-red as it fills the dark with smoke and heat.",
+    "glyphSize": "large",
     "id": "bloodright.creature.fire_dragon",
-    "tagId": "creature.dragon.fire",
-    "type": "character",
     "name": "Fire Dragon",
     "symbol": "D",
-    "glyphSize": "large",
-    "color": "#d83a32",
+    "tagId": "creature.dragon.fire",
     "thumbnail": "glyph",
-    "description": "A great fire dragon, its scales glowing ember-red as it fills the dark with smoke and heat."
+    "type": "character"
   },
   {
+    "color": "#e6a04d",
+    "description": "A bronze brazier whose low flame keeps the old vault from complete darkness.",
+    "glyphSize": "large",
     "id": "bloodright.prop.vault_brazier",
-    "tagId": "prop.furniture.light",
-    "type": "prop",
     "name": "Vault Brazier",
     "symbol": "&",
-    "glyphSize": "large",
-    "color": "#e6a04d",
+    "tagId": "prop.furniture.light",
     "thumbnail": "glyph",
-    "description": "A bronze brazier whose low flame keeps the old vault from complete darkness."
+    "type": "prop"
   },
   {
+    "color": "#e8dfc5",
+    "description": "A folded letter sealed with dark red wax; its recipient has been scratched away.",
+    "glyphSize": "small",
     "id": "bloodright.prop.sealed_letter",
-    "tagId": "prop.document.letter",
-    "type": "prop",
     "name": "Sealed Letter",
     "symbol": "?",
-    "glyphSize": "small",
-    "color": "#e8dfc5",
+    "tagId": "prop.document.letter",
     "thumbnail": "glyph",
-    "description": "A folded letter sealed with dark red wax; its recipient has been scratched away."
+    "type": "prop"
   },
   {
+    "color": "#a9443c",
+    "description": "A faded crimson banner carrying the mark of the old Bloodright line.",
+    "glyphSize": "large",
     "id": "bloodright.prop.bloodright_banner",
-    "tagId": "prop.decoration.banner",
-    "type": "prop",
     "name": "Bloodright Banner",
     "symbol": "|",
-    "glyphSize": "large",
-    "color": "#a9443c",
+    "tagId": "prop.decoration.banner",
     "thumbnail": "glyph",
-    "description": "A faded crimson banner carrying the mark of the old Bloodright line."
+    "type": "prop"
   }
 ]
