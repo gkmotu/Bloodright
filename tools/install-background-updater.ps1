@@ -1,9 +1,10 @@
 $ErrorActionPreference = 'Stop'
 $BloodrightUpdater = Join-Path $PSScriptRoot 'background-updater.ps1'
+$BloodrightRunner = Join-Path $PSScriptRoot 'run-background-updater.vbs'
 $BloodrightRoot = Split-Path -Parent $PSScriptRoot
 $BloodrightLauncher = Join-Path $BloodrightRoot 'Start Bloodright Debug.bat'
 $BloodrightTaskName = 'Bloodright Background Updater'
-$BloodrightTaskCommand = "powershell.exe -NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$BloodrightUpdater`""
+$BloodrightTaskCommand = "wscript.exe `"$BloodrightRunner`""
 
 schtasks.exe /Create /TN $BloodrightTaskName /TR $BloodrightTaskCommand /SC MINUTE /MO 15 /RU $env:USERNAME /IT /F
 if ($LASTEXITCODE -ne 0) { throw 'Windows could not create the Bloodright Background Updater task.' }
