@@ -49,7 +49,7 @@ func _load_bloodright() -> void:
     else:
         call_deferred("show_notification", "BLOODRIGHT ENGINE", "The First Vault is ready for play.")
     await get_tree().process_frame
-    await get_tree().create_timer(1.1).timeout
+    await get_tree().create_timer(3.0).timeout
     _dismiss_startup_splash()
 
 func _show_startup_splash() -> void:
@@ -108,7 +108,7 @@ func _dismiss_startup_splash() -> void:
     var fading_splash := splash_layer
     splash_layer = null
     var tween := create_tween()
-    tween.tween_property(fading_splash, "modulate:a", 0.0, 0.45)
+    tween.tween_property(fading_splash, "modulate:a", 0.0, 1.0)
     tween.tween_callback(fading_splash.queue_free)
 
 func _unhandled_key_input(event: InputEvent) -> void:
