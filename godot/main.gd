@@ -363,4 +363,9 @@ func _refresh_push_status() -> void:
     if is_instance_valid(push_status): push_status.text = message
 
 func _restart_engine() -> void:
-    get_tree().reload_current_scene()
+    var launcher_path := ProjectSettings.globalize_path("res://Start Bloodright Debug.bat")
+    if FileAccess.file_exists(launcher_path):
+        OS.create_process("cmd.exe", ["/c", "start", "", launcher_path])
+        get_tree().quit()
+    else:
+        get_tree().reload_current_scene()
