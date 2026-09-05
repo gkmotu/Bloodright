@@ -5,6 +5,19 @@ title Bloodright Debug Launcher
 cd /d "%~dp0"
 set "BLOODRIGHT_GODOT="
 set "BLOODRIGHT_PROJECT=%CD%"
+set "BLOODRIGHT_UPDATED=0"
+
+if exist ".git" (
+    git fetch --quiet origin main >nul 2>&1
+    if not errorlevel 1 (
+        for /f %%H in ('git rev-parse HEAD') do set "BLOODRIGHT_LOCAL=%%H"
+        for /f %%H in ('git rev-parse origin/main') do set "BLOODRIGHT_REMOTE=%%H"
+        if not "%BLOODRIGHT_LOCAL%"=="%BLOODRIGHT_REMOTE%" (
+            git pull --ff-only --quiet origin main >nul 2>&1
+            if not errorlevel 1 set "BLOODRIGHT_UPDATED=1"
+        )
+    )
+)
 
 for %%G in (godot_console.exe godot_console godot.exe godot) do (
     if not defined BLOODRIGHT_GODOT (

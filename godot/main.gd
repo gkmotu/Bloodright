@@ -22,6 +22,7 @@ var story_button: Button
 var dragon_warning_shown := false
 var combat_actions: VBoxContainer
 var notification_stack: VBoxContainer
+var push_status: Label
 
 func _ready() -> void:
     RenderingServer.set_default_clear_color(Color("0b0e0f"))
@@ -32,7 +33,10 @@ func _ready() -> void:
         push_error("\n".join(errors)); return
     game.begin(repository)
     _show_home()
-    call_deferred("show_notification", "BLOODRIGHT ENGINE", "The First Vault is ready for play.")
+    if OS.get_environment("BLOODRIGHT_UPDATED") == "1":
+        call_deferred("show_notification", "NEW BUILD INSTALLED", "Bloodright updated from main and is ready to play.", Color("6bab76"), "RESTART ENGINE", _restart_engine)
+    else:
+        call_deferred("show_notification", "BLOODRIGHT ENGINE", "The First Vault is ready for play.")
 
 func _unhandled_key_input(event: InputEvent) -> void:
     if not event.pressed or event.echo or not is_instance_valid(map_grid): return
@@ -52,7 +56,7 @@ func _shell(_title: String) -> VBoxContainer:
     var root := VBoxContainer.new(); root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT); root.add_theme_constant_override("separation", 0); add_child(root)
     var header := HBoxContainer.new(); header.custom_minimum_size.y = 76; header.add_theme_constant_override("separation", 10); root.add_child(header)
     var brand := Label.new(); brand.text = "  ◇  BLOODRIGHT\n      A DARK FANTASY ROGUELIKE"; brand.size_flags_horizontal = Control.SIZE_EXPAND_FILL; brand.add_theme_color_override("font_color", GOLD); header.add_child(brand)
-    for entry in [["HOME", _show_home], ["PLAY", _show_game], ["TERRAIN", _show_terrain_editor], ["ITEMS", _show_item_editor], ["DESCRIPTIONS", _show_description_editor], ["MAPS", _show_map_editor]]:
+    for entry in [["HOME", _show_home], ["PLAY", _show_game], ["TERRAIN", _show_terrain_editor], ["ITEMS", _show_item_editor], ["DESCRIPTIONS", _show_description_editor], ["MAPS", _show_map_editor], ["PUSH", _show_push_build]]:
         var button := Button.new(); button.text = entry[0]; button.pressed.connect(entry[1]); header.add_child(button)
     var rule := HSeparator.new(); root.add_child(rule)
     page = MarginContainer.new(); page.add_theme_constant_override("margin_left", 48); page.add_theme_constant_override("margin_right", 48); page.add_theme_constant_override("margin_top", 32); page.add_theme_constant_override("margin_bottom", 32); page.size_flags_vertical = Control.SIZE_EXPAND_FILL; root.add_child(page)
@@ -178,7 +182,7 @@ func _create_notification_stack() -> void:
     notification_stack.mouse_filter = Control.MOUSE_FILTER_IGNORE
     add_child(notification_stack)
 
-func show_notification(title: String, message: String, accent := GOLD) -> void:
+func show_notification(title: String, message: String, accent := GOLD, action_text := "", action := Callable()) -> void:
     if not is_instance_valid(notification_stack): return
     var card := PanelContainer.new()
     card.custom_minimum_size = Vector2(360, 0)
@@ -201,6 +205,12 @@ func show_notification(title: String, message: String, accent := GOLD) -> void:
     copy.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
     copy.add_theme_color_override("font_color", INK)
     box.add_child(copy)
+    if not action_text.is_empty() and action.is_valid():
+        var action_button := Button.new()
+        action_button.text = action_text
+        action_button.custom_minimum_size.y = 32
+        action_button.pressed.connect(action)
+        box.add_child(action_button)
     notification_stack.add_child(card)
     card.modulate = Color(1, 1, 1, 0)
     card.scale = Vector2(0.92, 0.92)
@@ -296,3 +306,30 @@ func _show_map_editor() -> void:
     var heading := Label.new(); heading.text = "MAP SCRIPTORIUM"; heading.add_theme_font_size_override("font_size", 40); heading.add_theme_color_override("font_color", GOLD); box.add_child(heading)
     var note := Label.new(); note.text = "The visual painting workspace is scaffolded next; the First Vault already loads from editable JSON."; note.add_theme_color_override("font_color", MUTED); box.add_child(note)
     var map_info := Label.new(); var current := repository.first_map(); map_info.text = "\n%s\n%d × %d tiles\nStable ID: %s" % [current.name, current.width, current.height, current.id]; map_info.add_theme_font_size_override("font_size", 24); box.add_child(map_info)
+
+func _show_push_build() -> void:
+    _shell("Push Build")
+    var center := CenterContainer.new(); page.add_child(center)
+    var box := VBoxContainer.new(); box.custom_minimum_size.x = 680; box.add_theme_constant_override("separation", 16); center.add_child(box)
+    var heading := Label.new(); heading.text = "PUSH BUILD"; heading.add_theme_font_size_override("font_size", 42); heading.add_theme_color_override("font_color", GOLD); box.add_child(heading)
+    var copy := Label.new(); copy.text = "Finish a session by publishing content, running tests, committing the current local work, and pushing it to origin/main."; copy.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; copy.add_theme_color_override("font_color", MUTED); copy.add_theme_font_size_override("font_size", 19); box.add_child(copy)
+    var update_note := Label.new(); update_note.text = "Installed Bloodright workspaces silently check main when launched. A new version shows as a lower-left notification."; update_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; box.add_child(update_note)
+    var push := Button.new(); push.text = "PUSH CURRENT CHANGES TO MAIN"; push.custom_minimum_size = Vector2(360, 52); push.pressed.connect(_push_current_build); box.add_child(push)
+    var restart := Button.new(); restart.text = "RESTART ENGINE"; restart.custom_minimum_size = Vector2(220, 40); restart.pressed.connect(_restart_engine); box.add_child(restart)
+    push_status = Label.new(); push_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; push_status.add_theme_color_override("font_color", MUTED); box.add_child(push_status)
+
+func _push_current_build() -> void:
+    if not is_instance_valid(push_status): return
+    push_status.text = "Publishing content, running tests, and pushing main…"
+    show_notification("PUSH BUILD", "Validating Bloodright before sending it to main.")
+    var output: Array = []
+    var script_path := ProjectSettings.globalize_path("res://tools/push-build.ps1")
+    var result := OS.execute("powershell.exe", ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", script_path], output, true)
+    push_status.text = "\n".join(PackedStringArray(output))
+    if result == 0:
+        show_notification("BUILD PUSHED", "Bloodright is now on main. Installed workspaces update on their next launch.", Color("6bab76"))
+    else:
+        show_notification("PUSH FAILED", "The build was not sent. Check the Push page for details.", Color("b84a40"))
+
+func _restart_engine() -> void:
+    get_tree().reload_current_scene()
