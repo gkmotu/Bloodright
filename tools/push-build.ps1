@@ -4,9 +4,19 @@ $BloodrightStatusPath = Join-Path $PSScriptRoot 'push-status.json'
 Set-Location -LiteralPath $BloodrightRoot
 
 function Set-BloodrightStatus([string]$Stage, [string]$Message) {
-    @{ stage = $Stage; message = $Message; updatedAt = (Get-Date).ToString('o') } |
-        ConvertTo-Json -Compress |
-        Set-Content -LiteralPath $BloodrightStatusPath -Encoding utf8
+    $statusJson = @{ stage = $Stage; message = $Message; updatedAt = (Get-Date).ToString('o') } |
+        ConvertTo-Json -Compress
+    $written = $false
+    for ($attempt = 1; $attempt -le 20 -and -not $written; $attempt++) {
+        try {
+            Set-Content -LiteralPath $BloodrightStatusPath -Value $statusJson -Encoding utf8 -ErrorAction Stop
+            $written = $true
+        }
+        catch {
+            if ($attempt -eq 20) { throw }
+            Start-Sleep -Milliseconds 50
+        }
+    }
     Write-Output $Message
 }
 

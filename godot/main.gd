@@ -364,7 +364,10 @@ func _refresh_push_status() -> void:
     var status_path := "res://tools/push-status.json"
     if not FileAccess.file_exists(status_path): return
     var file := FileAccess.open(status_path, FileAccess.READ)
-    var status: Variant = JSON.parse_string(file.get_as_text())
+    if file == null: return
+    var status_text := file.get_as_text()
+    file.close()
+    var status: Variant = JSON.parse_string(status_text)
     if not status is Dictionary: return
     var stage: String = status.get("stage", "")
     var message: String = status.get("message", "")
