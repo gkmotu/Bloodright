@@ -18,7 +18,7 @@ function Show-BloodrightLaunchSplash([string]$imagePath) {
     $art = New-Object System.Windows.Forms.PictureBox
     $art.Dock = [System.Windows.Forms.DockStyle]::Fill
     $art.ImageLocation = $imagePath
-    $art.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::Zoom
+    $art.SizeMode = [System.Windows.Forms.PictureBoxSizeMode]::StretchImage
     $form.Controls.Add($art)
     $title = New-Object System.Windows.Forms.Label
     $title.Text = 'BLOODRIGHT'
@@ -27,12 +27,32 @@ function Show-BloodrightLaunchSplash([string]$imagePath) {
     $title.ForeColor = [System.Drawing.Color]::FromArgb(214, 174, 95)
     $title.BackColor = [System.Drawing.Color]::Transparent
     $art.Controls.Add($title)
+    $subtitle = New-Object System.Windows.Forms.Label
+    $subtitle.Text = 'THE LONG NIGHT STIRS'
+    $subtitle.AutoSize = $true
+    $subtitle.Font = New-Object System.Drawing.Font('Palatino Linotype', 16, [System.Drawing.FontStyle]::Bold)
+    $subtitle.ForeColor = [System.Drawing.Color]::FromArgb(225, 210, 173)
+    $subtitle.BackColor = [System.Drawing.Color]::Transparent
+    $art.Controls.Add($subtitle)
+    $loading = New-Object System.Windows.Forms.Label
+    $loading.Text = 'LOADING THE FIRST VAULT'
+    $loading.AutoSize = $true
+    $loading.Font = New-Object System.Drawing.Font('Palatino Linotype', 12, [System.Drawing.FontStyle]::Regular)
+    $loading.ForeColor = [System.Drawing.Color]::FromArgb(199, 185, 146)
+    $loading.BackColor = [System.Drawing.Color]::Transparent
+    $art.Controls.Add($loading)
     $centerTitle = {
         $title.Left = [int](($art.ClientSize.Width - $title.Width) / 2)
-        $title.Top = [int](($art.ClientSize.Height - $title.Height) / 2)
+        $title.Top = [int](($art.ClientSize.Height / 2) - $title.Height - 12)
+        $subtitle.Left = [int](($art.ClientSize.Width - $subtitle.Width) / 2)
+        $subtitle.Top = $title.Top + $title.Height + 4
+        $loading.Left = [int](($art.ClientSize.Width - $loading.Width) / 2)
+        $loading.Top = $art.ClientSize.Height - $loading.Height - 54
     }
     $art.Add_Resize($centerTitle)
     $title.BringToFront()
+    $subtitle.BringToFront()
+    $loading.BringToFront()
     $form.Show()
     & $centerTitle
     [System.Windows.Forms.Application]::DoEvents()

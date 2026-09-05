@@ -60,7 +60,7 @@ func _show_startup_splash() -> void:
     var art := TextureRect.new()
     art.texture = STARTUP_SPLASH
     art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-    art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+    art.stretch_mode = TextureRect.STRETCH_SCALE
     art.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
     splash_layer.add_child(art)
     var veil := ColorRect.new()
