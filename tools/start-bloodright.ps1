@@ -26,11 +26,15 @@ function Show-BloodrightLaunchSplash([string]$imagePath) {
     $title.Font = New-Object System.Drawing.Font('Palatino Linotype', 54, [System.Drawing.FontStyle]::Bold)
     $title.ForeColor = [System.Drawing.Color]::FromArgb(214, 174, 95)
     $title.BackColor = [System.Drawing.Color]::Transparent
-    $title.Left = [int](($form.Bounds.Width - $title.PreferredWidth) / 2)
-    $title.Top = [int](($form.Bounds.Height / 2) - 90)
-    $form.Controls.Add($title)
+    $art.Controls.Add($title)
+    $centerTitle = {
+        $title.Left = [int](($art.ClientSize.Width - $title.Width) / 2)
+        $title.Top = [int](($art.ClientSize.Height - $title.Height) / 2)
+    }
+    $art.Add_Resize($centerTitle)
     $title.BringToFront()
     $form.Show()
+    & $centerTitle
     [System.Windows.Forms.Application]::DoEvents()
     return $form
 }
