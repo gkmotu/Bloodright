@@ -375,9 +375,9 @@ func _refresh_push_status() -> void:
             show_notification("PUSH FAILED", "The build was not sent. Check the Push page for details.", Color("b84a40"))
 
 func _restart_engine() -> void:
-    var launcher_path := ProjectSettings.globalize_path("res://Start Bloodright Debug.bat")
+    var launcher_path := ProjectSettings.globalize_path("res://tools/start-bloodright.ps1")
     if FileAccess.file_exists(launcher_path):
-        OS.create_process("cmd.exe", ["/c", "start", "", launcher_path])
+        OS.create_process("powershell.exe", ["-NoProfile", "-ExecutionPolicy", "Bypass", "-WindowStyle", "Hidden", "-File", launcher_path])
         get_tree().quit()
     else:
         get_tree().reload_current_scene()
