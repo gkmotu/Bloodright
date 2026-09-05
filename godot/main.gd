@@ -263,7 +263,13 @@ func _show_description_editor() -> void:
     var symbol_input := _description_text_field(form, "Symbol", selected_entry.get("symbol", "?"))
     var tag_input := _description_text_field(form, "Tag ID", selected_entry.get("tagId", ""))
     var id_input := _description_text_field(form, "Stable ID", selected_entry.get("id", ""))
-    var type_select := OptionButton.new(); for option in ["prop", "item", "terrain", "character", "ui"]: type_select.add_item(option); type_select.select(maxi(0, type_select.get_item_index(type_select.get_item_id(["prop", "item", "terrain", "character", "ui"].find(selected_entry.get("type", "prop")))))); _description_labeled_control(form, "Type", type_select)
+    var type_select := OptionButton.new()
+    var type_options: Array[String] = ["prop", "item", "terrain", "character", "ui"]
+    for option: String in type_options:
+        type_select.add_item(option)
+    var selected_type_index := type_options.find(str(selected_entry.get("type", "prop")))
+    type_select.select(maxi(0, selected_type_index))
+    _description_labeled_control(form, "Type", type_select)
     var size_select := OptionButton.new(); size_select.add_item("small"); size_select.add_item("large"); size_select.select(1 if selected_entry.get("glyphSize", "small") == "large" else 0); _description_labeled_control(form, "Symbol size", size_select)
     var color_picker := ColorPickerButton.new(); color_picker.color = Color(selected_entry.get("color", "#ffffff")); _description_labeled_control(form, "Colour", color_picker)
     var thumb_label := Label.new(); thumb_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER; thumb_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER; thumb_label.custom_minimum_size = Vector2(100, 76); _description_labeled_control(form, "Visual thumbnail", thumb_label)
