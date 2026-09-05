@@ -24,9 +24,9 @@ var combat_actions: VBoxContainer
 var notification_stack: VBoxContainer
 var push_status: Label
 var push_button: Button
-var push_thread: Thread
 var push_in_progress := false
 var push_last_message := ""
+var push_last_stage := ""
 
 func _ready() -> void:
     RenderingServer.set_default_clear_color(Color("0b0e0f"))
@@ -53,15 +53,6 @@ func _unhandled_key_input(event: InputEvent) -> void:
 func _process(_delta: float) -> void:
     if not push_in_progress: return
     _refresh_push_status()
-    if push_thread.is_alive(): return
-    var result: Dictionary = push_thread.wait_to_finish()
-    push_in_progress = false
-    if is_instance_valid(push_button): push_button.disabled = false
-    if is_instance_valid(push_status): push_status.text = result.get("details", push_last_message)
-    if int(result.get("exit_code", 1)) == 0:
-        show_notification("BUILD PUSHED", "Bloodright is now on main. Installed workspaces update on their next launch.", Color("6bab76"))
-    else:
-        show_notification("PUSH FAILED", "The build was not sent. Check the Push page for details.", Color("b84a40"))
 
 func _shell(_title: String) -> VBoxContainer:
     if is_instance_valid(story_popup):
@@ -339,17 +330,19 @@ func _push_current_build() -> void:
     if push_in_progress or not is_instance_valid(push_status): return
     push_status.text = "Starting Push Build…"
     push_last_message = ""
+    push_last_stage = ""
     if is_instance_valid(push_button): push_button.disabled = true
     show_notification("PUSH BUILD", "Validating Bloodright before sending it to main.")
-    push_thread = Thread.new()
-    push_in_progress = true
-    push_thread.start(_run_push_build)
-
-func _run_push_build() -> Dictionary:
-    var output: Array = []
+    var status_path := ProjectSettings.globalize_path("res://tools/push-status.json")
+    if FileAccess.file_exists(status_path): DirAccess.remove_absolute(status_path)
     var script_path := ProjectSettings.globalize_path("res://tools/push-build.ps1")
-    var result := OS.execute("powershell.exe", ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", script_path], output, true)
-    return {"exit_code": result, "details": "\n".join(PackedStringArray(output))}
+    var process_id := OS.create_process("powershell.exe", ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", script_path])
+    if process_id == -1:
+        push_status.text = "Could not start the Push Build process."
+        if is_instance_valid(push_button): push_button.disabled = false
+        show_notification("PUSH FAILED", "PowerShell could not start the build process.", Color("b84a40"))
+        return
+    push_in_progress = true
 
 func _refresh_push_status() -> void:
     var status_path := "res://tools/push-status.json"
@@ -357,10 +350,19 @@ func _refresh_push_status() -> void:
     var file := FileAccess.open(status_path, FileAccess.READ)
     var status: Variant = JSON.parse_string(file.get_as_text())
     if not status is Dictionary: return
+    var stage: String = status.get("stage", "")
     var message: String = status.get("message", "")
-    if message.is_empty() or message == push_last_message: return
-    push_last_message = message
-    if is_instance_valid(push_status): push_status.text = message
+    if not message.is_empty() and message != push_last_message:
+        push_last_message = message
+        if is_instance_valid(push_status): push_status.text = message
+    if stage in ["complete", "failed"] and stage != push_last_stage:
+        push_last_stage = stage
+        push_in_progress = false
+        if is_instance_valid(push_button): push_button.disabled = false
+        if stage == "complete":
+            show_notification("BUILD PUSHED", "Bloodright is now on main. Installed workspaces update on their next launch.", Color("6bab76"))
+        else:
+            show_notification("PUSH FAILED", "The build was not sent. Check the Push page for details.", Color("b84a40"))
 
 func _restart_engine() -> void:
     var launcher_path := ProjectSettings.globalize_path("res://Start Bloodright Debug.bat")
