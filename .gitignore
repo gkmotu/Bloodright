@@ -14,3 +14,6 @@ Desktop.ini
 
 # Node dependencies
 node_modules/
+
+# Temporary live status written by the Push Build workflow
+tools/push-status.json

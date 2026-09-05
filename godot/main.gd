@@ -23,6 +23,10 @@ var dragon_warning_shown := false
 var combat_actions: VBoxContainer
 var notification_stack: VBoxContainer
 var push_status: Label
+var push_button: Button
+var push_thread: Thread
+var push_in_progress := false
+var push_last_message := ""
 
 func _ready() -> void:
     RenderingServer.set_default_clear_color(Color("0b0e0f"))
@@ -45,6 +49,19 @@ func _unhandled_key_input(event: InputEvent) -> void:
     if directions.has(key): game.try_move(directions[key]); _render_game()
     elif key == "g": game.pickup(); _render_game()
     elif key == "r": game.begin(repository); _render_game()
+
+func _process(_delta: float) -> void:
+    if not push_in_progress: return
+    _refresh_push_status()
+    if push_thread.is_alive(): return
+    var result: Dictionary = push_thread.wait_to_finish()
+    push_in_progress = false
+    if is_instance_valid(push_button): push_button.disabled = false
+    if is_instance_valid(push_status): push_status.text = result.get("details", push_last_message)
+    if int(result.get("exit_code", 1)) == 0:
+        show_notification("BUILD PUSHED", "Bloodright is now on main. Installed workspaces update on their next launch.", Color("6bab76"))
+    else:
+        show_notification("PUSH FAILED", "The build was not sent. Check the Push page for details.", Color("b84a40"))
 
 func _shell(_title: String) -> VBoxContainer:
     if is_instance_valid(story_popup):
@@ -314,22 +331,36 @@ func _show_push_build() -> void:
     var heading := Label.new(); heading.text = "PUSH BUILD"; heading.add_theme_font_size_override("font_size", 42); heading.add_theme_color_override("font_color", GOLD); box.add_child(heading)
     var copy := Label.new(); copy.text = "Finish a session by publishing content, running tests, committing the current local work, and pushing it to origin/main."; copy.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; copy.add_theme_color_override("font_color", MUTED); copy.add_theme_font_size_override("font_size", 19); box.add_child(copy)
     var update_note := Label.new(); update_note.text = "Installed Bloodright workspaces silently check main when launched. A new version shows as a lower-left notification."; update_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; box.add_child(update_note)
-    var push := Button.new(); push.text = "PUSH CURRENT CHANGES TO MAIN"; push.custom_minimum_size = Vector2(360, 52); push.pressed.connect(_push_current_build); box.add_child(push)
+    push_button = Button.new(); push_button.text = "PUSH CURRENT CHANGES TO MAIN"; push_button.custom_minimum_size = Vector2(360, 52); push_button.pressed.connect(_push_current_build); box.add_child(push_button)
     var restart := Button.new(); restart.text = "RESTART ENGINE"; restart.custom_minimum_size = Vector2(220, 40); restart.pressed.connect(_restart_engine); box.add_child(restart)
     push_status = Label.new(); push_status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; push_status.add_theme_color_override("font_color", MUTED); box.add_child(push_status)
 
 func _push_current_build() -> void:
-    if not is_instance_valid(push_status): return
-    push_status.text = "Publishing content, running tests, and pushing main…"
+    if push_in_progress or not is_instance_valid(push_status): return
+    push_status.text = "Starting Push Build…"
+    push_last_message = ""
+    if is_instance_valid(push_button): push_button.disabled = true
     show_notification("PUSH BUILD", "Validating Bloodright before sending it to main.")
+    push_thread = Thread.new()
+    push_in_progress = true
+    push_thread.start(_run_push_build)
+
+func _run_push_build() -> Dictionary:
     var output: Array = []
     var script_path := ProjectSettings.globalize_path("res://tools/push-build.ps1")
     var result := OS.execute("powershell.exe", ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", script_path], output, true)
-    push_status.text = "\n".join(PackedStringArray(output))
-    if result == 0:
-        show_notification("BUILD PUSHED", "Bloodright is now on main. Installed workspaces update on their next launch.", Color("6bab76"))
-    else:
-        show_notification("PUSH FAILED", "The build was not sent. Check the Push page for details.", Color("b84a40"))
+    return {"exit_code": result, "details": "\n".join(PackedStringArray(output))}
+
+func _refresh_push_status() -> void:
+    var status_path := "res://tools/push-status.json"
+    if not FileAccess.file_exists(status_path): return
+    var file := FileAccess.open(status_path, FileAccess.READ)
+    var status: Variant = JSON.parse_string(file.get_as_text())
+    if not status is Dictionary: return
+    var message: String = status.get("message", "")
+    if message.is_empty() or message == push_last_message: return
+    push_last_message = message
+    if is_instance_valid(push_status): push_status.text = message
 
 func _restart_engine() -> void:
     get_tree().reload_current_scene()
