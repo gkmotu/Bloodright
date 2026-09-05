@@ -44,6 +44,15 @@ function Wait-WithLaunchSplash([int]$milliseconds) {
     }
 }
 
+function Fade-BloodrightLaunchSplash($form) {
+    if (-not $form) { return }
+    for ($opacity = 1.0; $opacity -gt 0; $opacity -= 0.05) {
+        $form.Opacity = $opacity
+        [System.Windows.Forms.Application]::DoEvents()
+        Start-Sleep -Milliseconds 50
+    }
+}
+
 function Write-LaunchLog([string]$message) {
     Add-Content -LiteralPath $logPath -Value ("{0:u}  {1}" -f (Get-Date), $message)
 }
@@ -82,7 +91,8 @@ try {
     $env:BLOODRIGHT_UPDATED = if ($updated) { '1' } else { '0' }
     Write-LaunchLog ("Launching verified master {0}" -f ((& git rev-parse --short HEAD).Trim()))
     Start-Process -FilePath $godot -WorkingDirectory $projectRoot -ArgumentList @('--path', $projectRoot, '--debug', '--maximized')
-    Wait-WithLaunchSplash 1000
+    Wait-WithLaunchSplash 3000
+    Fade-BloodrightLaunchSplash $launchSplash
     if ($launchSplash) { $launchSplash.Close(); $launchSplash.Dispose() }
 }
 catch {
