@@ -1,9 +1,10 @@
 extends Control
 
 const TILE_SIZE := 42
-const GOLD := Color("c6a15b")
-const INK := Color("d8d0ba")
-const MUTED := Color("918b7d")
+var GOLD := Color("c6a15b")
+var INK := Color("d8d0ba")
+var MUTED := Color("918b7d")
+var BACKGROUND := Color("0b0e0f")
 
 var repository := ContentRepository.new()
 var game := BloodrightGameState.new()
@@ -29,12 +30,12 @@ var push_last_message := ""
 var push_last_stage := ""
 
 func _ready() -> void:
-    RenderingServer.set_default_clear_color(Color("0b0e0f"))
     _create_notification_stack()
     if not repository.load_published(): return
     var errors := repository.validate()
     if not errors.is_empty():
         push_error("\n".join(errors)); return
+    _apply_visual_settings()
     game.begin(repository)
     _show_home()
     if OS.get_environment("BLOODRIGHT_UPDATED") == "1":
@@ -64,7 +65,7 @@ func _shell(_title: String) -> VBoxContainer:
     var root := VBoxContainer.new(); root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT); root.add_theme_constant_override("separation", 0); add_child(root)
     var header := HBoxContainer.new(); header.custom_minimum_size.y = 76; header.add_theme_constant_override("separation", 10); root.add_child(header)
     var brand := Label.new(); brand.text = "  ◇  BLOODRIGHT\n      A DARK FANTASY ROGUELIKE"; brand.size_flags_horizontal = Control.SIZE_EXPAND_FILL; brand.add_theme_color_override("font_color", GOLD); header.add_child(brand)
-    for entry in [["HOME", _show_home], ["PLAY", _show_game], ["TERRAIN", _show_terrain_editor], ["ITEMS", _show_item_editor], ["DESCRIPTIONS", _show_description_editor], ["MAPS", _show_map_editor], ["PUSH", _show_push_build]]:
+    for entry in [["HOME", _show_home], ["PLAY", _show_game], ["TERRAIN", _show_terrain_editor], ["ITEMS", _show_item_editor], ["DESCRIPTIONS", _show_description_editor], ["MAPS", _show_map_editor], ["SETTINGS", _show_settings], ["PUSH", _show_push_build]]:
         var button := Button.new(); button.text = entry[0]; button.pressed.connect(entry[1]); header.add_child(button)
     var rule := HSeparator.new(); root.add_child(rule)
     page = MarginContainer.new(); page.add_theme_constant_override("margin_left", 48); page.add_theme_constant_override("margin_right", 48); page.add_theme_constant_override("margin_top", 32); page.add_theme_constant_override("margin_bottom", 32); page.size_flags_vertical = Control.SIZE_EXPAND_FILL; root.add_child(page)
@@ -280,7 +281,7 @@ func _show_description_editor() -> void:
     size_select.item_selected.connect(func(index: int) -> void: selected_entry.glyphSize = size_select.get_item_text(index); refresh_thumbnail.call())
     color_picker.color_changed.connect(func(value: Color) -> void: selected_entry.color = "#%s" % value.to_html(false); refresh_thumbnail.call())
     description_input.text_changed.connect(func() -> void: selected_entry.description = description_input.text)
-    var save := Button.new(); save.text = "SAVE DESCRIPTION DRAFT"; save.custom_minimum_size = Vector2(250, 44); save.pressed.connect(_save_description_draft); editor.add_child(save)
+    var save := Button.new(); save.text = "SAVE AND PUBLISH DESCRIPTION"; save.custom_minimum_size = Vector2(300, 44); save.pressed.connect(_save_description_draft); editor.add_child(save)
 
 func _description_labeled_control(parent: Control, label_text: String, control: Control, add_to_parent := true) -> VBoxContainer:
     var box := VBoxContainer.new(); var label := Label.new(); label.text = label_text.to_upper(); label.add_theme_color_override("font_color", MUTED); label.add_theme_font_size_override("font_size", 12); box.add_child(label); box.add_child(control)
@@ -307,7 +308,10 @@ func _save_description_draft() -> void:
         push_error("Could not write the description draft to content/source/descriptions.json")
         return
     file.store_string(JSON.stringify(repository.content.descriptions, "  ") + "\n")
-    print("Description draft saved. Run npm run publish to put it into the game.")
+    if not repository.save_published():
+        push_error("Description was saved to source, but could not be published.")
+        return
+    show_notification("DESCRIPTION SAVED", "The published game data now includes this description after restart.", Color("6bab76"))
 
 func _show_map_editor() -> void:
     _shell("Map Scriptorium"); var box := VBoxContainer.new(); page.add_child(box)
@@ -371,3 +375,39 @@ func _restart_engine() -> void:
         get_tree().quit()
     else:
         get_tree().reload_current_scene()
+
+func _apply_visual_settings() -> void:
+    var visual_theme: Dictionary = repository.content.get("settings", {}).get("theme", {})
+    GOLD = Color(visual_theme.get("accent", "#c6a15b"))
+    INK = Color(visual_theme.get("text", "#d8d0ba"))
+    MUTED = Color(visual_theme.get("muted", "#918b7d"))
+    BACKGROUND = Color(visual_theme.get("background", "#0b0e0f"))
+    RenderingServer.set_default_clear_color(BACKGROUND)
+    get_window().content_scale_factor = float(visual_theme.get("uiScale", 1.0))
+
+func _show_settings() -> void:
+    _shell("Settings")
+    var center := CenterContainer.new(); page.add_child(center)
+    var box := VBoxContainer.new(); box.custom_minimum_size.x = 640; box.add_theme_constant_override("separation", 14); center.add_child(box)
+    var heading := Label.new(); heading.text = "APPLICATION SETTINGS"; heading.add_theme_font_size_override("font_size", 40); heading.add_theme_color_override("font_color", GOLD); box.add_child(heading)
+    var note := Label.new(); note.text = "Saved settings are loaded every time Bloodright starts. Choose the visual language for this workspace, then save and publish it."; note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART; note.add_theme_color_override("font_color", MUTED); box.add_child(note)
+    var form := GridContainer.new(); form.columns = 2; form.add_theme_constant_override("h_separation", 18); form.add_theme_constant_override("v_separation", 12); box.add_child(form)
+    var visual_theme: Dictionary = repository.content.get("settings", {}).get("theme", {})
+    _settings_colour(form, "Accent colour", "accent", Color(visual_theme.get("accent", "#c6a15b")))
+    _settings_colour(form, "Text colour", "text", Color(visual_theme.get("text", "#d8d0ba")))
+    _settings_colour(form, "Muted text colour", "muted", Color(visual_theme.get("muted", "#918b7d")))
+    _settings_colour(form, "Background colour", "background", Color(visual_theme.get("background", "#0b0e0f")))
+    var scale_picker := OptionButton.new(); scale_picker.add_item("90%"); scale_picker.add_item("100%"); scale_picker.add_item("110%"); scale_picker.add_item("125%"); var values := [0.9, 1.0, 1.1, 1.25]; scale_picker.select(values.find(float(visual_theme.get("uiScale", 1.0)))); scale_picker.item_selected.connect(func(index: int) -> void: repository.content.settings.theme.uiScale = values[index]); _description_labeled_control(form, "Interface scale", scale_picker)
+    var save := Button.new(); save.text = "SAVE AND PUBLISH SETTINGS"; save.custom_minimum_size = Vector2(300, 48); save.pressed.connect(_save_visual_settings); box.add_child(save)
+
+func _settings_colour(parent: Control, label_text: String, key: String, value: Color) -> void:
+    var picker := ColorPickerButton.new(); picker.color = value
+    picker.color_changed.connect(func(selected: Color) -> void: repository.content.settings.theme[key] = "#%s" % selected.to_html(false))
+    _description_labeled_control(parent, label_text, picker)
+
+func _save_visual_settings() -> void:
+    if not repository.save_settings_source() or not repository.save_published():
+        push_error("Bloodright could not save the application settings.")
+        return
+    _apply_visual_settings()
+    show_notification("SETTINGS SAVED", "Colours and interface scale will load exactly the same after restart.", Color("6bab76"))

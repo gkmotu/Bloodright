@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "publishedAt": "2026-09-05T15:13:41.229Z",
+  "publishedAt": "2026-09-05T15:17:14.794Z",
   "terrain": [
     {
       "id": "bloodright.floor.stone",
@@ -111,6 +111,16 @@
       "description": "A faded crimson banner carrying the mark of the old Bloodright line."
     }
   ],
+  "settings": {
+    "id": "bloodright.settings.application",
+    "theme": {
+      "accent": "#c6a15b",
+      "text": "#d8d0ba",
+      "muted": "#918b7d",
+      "background": "#0b0e0f",
+      "uiScale": 1
+    }
+  },
   "maps": [
     {
       "id": "bloodright.map.first_vault",

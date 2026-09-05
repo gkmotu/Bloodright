@@ -2,6 +2,7 @@ class_name ContentRepository
 extends RefCounted
 
 const PUBLISHED_PATH := "res://content/published/content.json"
+const SETTINGS_SOURCE_PATH := "res://content/source/app-settings.json"
 
 var content: Dictionary = {}
 var terrain_by_id: Dictionary = {}
@@ -54,3 +55,16 @@ func validate() -> PackedStringArray:
             if not description_by_id.has(actor.get("descriptionId", "")):
                 errors.append("Map references missing description: %s" % actor.get("descriptionId", ""))
     return errors
+
+func save_settings_source() -> bool:
+    var file := FileAccess.open(SETTINGS_SOURCE_PATH, FileAccess.WRITE)
+    if file == null: return false
+    file.store_string(JSON.stringify(content.get("settings", {}), "  ") + "\n")
+    return true
+
+func save_published() -> bool:
+    var file := FileAccess.open(PUBLISHED_PATH, FileAccess.WRITE)
+    if file == null: return false
+    content.publishedAt = Time.get_datetime_string_from_system(true)
+    file.store_string(JSON.stringify(content, "  ") + "\n")
+    return true

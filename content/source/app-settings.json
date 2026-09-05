@@ -1,0 +1,10 @@
+{
+  "id": "bloodright.settings.application",
+  "theme": {
+    "accent": "#c6a15b",
+    "text": "#d8d0ba",
+    "muted": "#918b7d",
+    "background": "#0b0e0f",
+    "uiScale": 1.0
+  }
+}

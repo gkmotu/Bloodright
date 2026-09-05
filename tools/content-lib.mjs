@@ -8,6 +8,7 @@ export function readSource(root = process.cwd()) {
     terrain: read('content/source/terrain.json'),
     items: read('content/source/items.json'),
     descriptions: read('content/source/descriptions.json'),
+    settings: read('content/source/app-settings.json'),
     maps: fs.readdirSync(mapDir).filter(f => f.endsWith('.json')).map(f => read(`content/source/maps/${f}`))
   };
 }
@@ -23,6 +24,7 @@ export function validateContent(content) {
   }
   const terrainIds = new Set(content.terrain.map(t => t.id));
   const itemIds = new Set(content.items.map(i => i.id));
+  if (!content.settings?.id) errors.push('Application settings need a stable ID.');
   for (const entry of content.descriptions) {
     if (!entry.name) errors.push(`${entry.id}: missing name`);
     if (!entry.tagId) errors.push(`${entry.id}: missing tag ID`);
