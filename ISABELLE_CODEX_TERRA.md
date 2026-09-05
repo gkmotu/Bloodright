@@ -13,8 +13,10 @@ Git workspace connected to the private Bloodright repository.
 
 ## Starting the game
 
-Double-click `Start Bloodright Debug.bat`. It opens the game maximized and
-checks for a newer safe build before launch.
+Double-click `Start Bloodright Debug.bat`. It opens the game maximized only
+after it has fetched and installed the newest verified GitHub `main` build.
+It does not launch an unverified local copy. Any unpushed local work is kept
+as recovery history before master becomes the active version.
 
 For the Godot editor, open `project.godot` and use **Run Project**.
 
@@ -39,6 +41,16 @@ Edit source content in `content/source`. Do not manually edit
 
 ## Working with Codex Terra
 
+At the beginning of every new Codex Terra task, paste this:
+
+> Work only in `%USERPROFILE%\Desktop\Bloodright`, the permanent private
+> Git workspace. Bloodright is the game; Varenza is a family surname. Inspect
+> the relevant existing files before changing anything. Preserve unrelated
+> work. Keep world data in `content/source`, not in generated published data.
+> Validate and test every implementation. Do not push, reset, move the
+> workspace, or make an external change unless I explicitly ask. Explain the
+> completed change in plain language and name the files changed.
+
 Give Codex Terra focused requests, for example:
 
 > Add a new Bloodright description entry for a frost wolf: a large pale `w`,
@@ -53,6 +65,10 @@ Ask it to:
 4. Validate and test after changes.
 5. Explain exactly what changed in plain language.
 6. Use **Push** only when you say the session is ready to publish.
+
+Descriptions and application settings save locally as they are changed in the
+editor. The **Push** page is still the point at which those saved changes are
+validated, committed, and sent to master.
 
 ## Publishing a completed session
 
@@ -76,7 +92,19 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools\install-background-upd
 
 It checks GitHub every 15 minutes while she is signed in. It never overwrites
 uncommitted local edits. It shows a Windows notification when a newer build is
-installed or waiting, including a **Restart Bloodright** action.
+installed or waiting, including a **Restart Bloodright** action. The in-game
+Restart button closes the game, verifies master, installs it, then starts the
+clean windowed game again.
+
+## Shared Android build alerts
+
+Install **ntfy** from Google Play on Isabelle's phone, then subscribe to this
+same shared topic (the topic field contains only the final part):
+
+`bloodright-build-c9a4e71f0db843c6a2e9`
+
+Allow notifications. Every successful Bloodright Push sends a “build ready”
+alert to both subscribed phones.
 
 ## First playable encounter
 
