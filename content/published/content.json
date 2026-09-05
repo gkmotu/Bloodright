@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "publishedAt": "2026-09-05T15:32:53.379Z",
+  "publishedAt": "2026-09-05T15:33:30.831Z",
   "terrain": [
     {
       "id": "bloodright.floor.stone",
@@ -67,7 +67,7 @@
   ],
   "descriptions": [
     {
-      "color": "#429335",
+      "color": "#53161f",
       "description": "A great fire dragon, its scales glowing ember-red as it fills the dark with smoke and heat.",
       "glyphSize": "large",
       "id": "bloodright.creature.fire_dragon",
