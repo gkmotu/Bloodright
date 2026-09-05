@@ -1,6 +1,7 @@
 extends Control
 
 const TILE_SIZE := 42
+const STARTUP_SPLASH := preload("res://assets/splash/bloodright-castle-splash.png")
 var GOLD := Color("c6a15b")
 var INK := Color("d8d0ba")
 var MUTED := Color("918b7d")
@@ -28,8 +29,13 @@ var push_button: Button
 var push_in_progress := false
 var push_last_message := ""
 var push_last_stage := ""
+var splash_layer: Control
 
 func _ready() -> void:
+    _show_startup_splash()
+    call_deferred("_load_bloodright")
+
+func _load_bloodright() -> void:
     _create_notification_stack()
     if not repository.load_published(): return
     var errors := repository.validate()
@@ -42,6 +48,68 @@ func _ready() -> void:
         call_deferred("show_notification", "NEW BUILD INSTALLED", "Bloodright updated from main and is ready to play.", Color("6bab76"), "RESTART ENGINE", _restart_engine)
     else:
         call_deferred("show_notification", "BLOODRIGHT ENGINE", "The First Vault is ready for play.")
+    await get_tree().process_frame
+    await get_tree().create_timer(1.1).timeout
+    _dismiss_startup_splash()
+
+func _show_startup_splash() -> void:
+    splash_layer = Control.new()
+    splash_layer.z_index = 100
+    splash_layer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+    add_child(splash_layer)
+    var art := TextureRect.new()
+    art.texture = STARTUP_SPLASH
+    art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+    art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+    art.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+    splash_layer.add_child(art)
+    var veil := ColorRect.new()
+    veil.color = Color(0.015, 0.02, 0.025, 0.28)
+    veil.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+    splash_layer.add_child(veil)
+    var title_area := VBoxContainer.new()
+    title_area.set_anchors_preset(Control.PRESET_CENTER)
+    title_area.position = Vector2(-420, -98)
+    title_area.size = Vector2(840, 196)
+    title_area.alignment = BoxContainer.ALIGNMENT_CENTER
+    splash_layer.add_child(title_area)
+    var title := Label.new()
+    var title_font := SystemFont.new()
+    title_font.font_names = PackedStringArray(["Palatino Linotype", "Georgia", "Times New Roman"])
+    title.add_theme_font_override("font", title_font)
+    title.text = "BLOODRIGHT"
+    title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    title.add_theme_font_size_override("font_size", 92)
+    title.add_theme_color_override("font_color", Color("d6ae5f"))
+    title.add_theme_color_override("font_outline_color", Color("160c08"))
+    title.add_theme_constant_override("outline_size", 10)
+    title.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.9))
+    title.add_theme_constant_override("shadow_offset_x", 3)
+    title.add_theme_constant_override("shadow_offset_y", 6)
+    title_area.add_child(title)
+    var subtitle := Label.new()
+    subtitle.text = "THE LONG NIGHT STIRS"
+    subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    subtitle.add_theme_font_size_override("font_size", 18)
+    subtitle.add_theme_color_override("font_color", Color("e1d2ad"))
+    title_area.add_child(subtitle)
+    var loading := Label.new()
+    loading.text = "LOADING THE FIRST VAULT"
+    loading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+    loading.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+    loading.position = Vector2(-180, -72)
+    loading.size = Vector2(360, 28)
+    loading.add_theme_font_size_override("font_size", 14)
+    loading.add_theme_color_override("font_color", Color("c7b992"))
+    splash_layer.add_child(loading)
+
+func _dismiss_startup_splash() -> void:
+    if not is_instance_valid(splash_layer): return
+    var fading_splash := splash_layer
+    splash_layer = null
+    var tween := create_tween()
+    tween.tween_property(fading_splash, "modulate:a", 0.0, 0.45)
+    tween.tween_callback(fading_splash.queue_free)
 
 func _unhandled_key_input(event: InputEvent) -> void:
     if not event.pressed or event.echo or not is_instance_valid(map_grid): return
@@ -60,7 +128,7 @@ func _shell(_title: String) -> VBoxContainer:
         story_popup.queue_free()
         story_popup = null
     for child in get_children():
-        if child != notification_stack: child.queue_free()
+        if child != notification_stack and child != splash_layer: child.queue_free()
     map_grid = null
     var root := VBoxContainer.new(); root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT); root.add_theme_constant_override("separation", 0); add_child(root)
     var header := HBoxContainer.new(); header.custom_minimum_size.y = 76; header.add_theme_constant_override("separation", 10); root.add_child(header)
